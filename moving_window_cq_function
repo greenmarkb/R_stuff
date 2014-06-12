@@ -1,0 +1,48 @@
+# This function will return a time, concentration (c) versus discharge (q) slope and intercept for a moving window. The concentration-discharge relationship is determined using a Sen slope estimate.
+
+# 't' is a time stamp is numeric (e.g., fractional days since 1/1/1970)
+# 'q' is discharge in whatever units you like
+# 'c' is concentration in whatever units you like
+# 'Kh' is the size of the moving window in the same units as 't'
+# 'step' is the size of the time step for the moving window function in the same units as 't'
+
+moving.cq = function(t, q, c, Kh, step){
+	if(length(t)!=length(q)){return("T and Q are not equal length")}
+	if(length(t)!=length(c)){return("T and C are not equal length")}
+	if(length(c)!=length(q)){return("C and Q are not equal length")}
+
+lowest = min(t)+(Kh/2) # lowest date where the function will be analyzed
+highest = max(t)-(Kh/2) # highest date where the function will be analyzed
+
+results = matrix(0, length(seq(lowest, highest, step)), 3)
+
+index = 1 # this is the container that will reference the point in the results matrix during looped calculation
+
+for(i in seq(lowest, highest, step)) {
+minKh = i - (Kh/2)
+maxKh = i + (Kh/2)
+q.sub = subset(q, t <= maxKh & t > minKh)
+c.sub = subset(c, t <= maxKh & t > minKh)
+x=log10(q.sub)
+y=log10(c.sub)
+xx = outer(x, x, "-")
+yy = outer(y, y, "-")
+zz = yy/xx
+s1 = zz[lower.tri(zz)]
+s2 = subset(s1, s1!="NA" & s1<1e20)
+slope = median(s2) # Sen slope estimation
+i1 = y - slope*x
+intercept = median(i1, na.rm=TRUE) # Sen intercept estimation
+results[index,1] = i
+results[index,2] = slope
+results[index,3] = intercept
+
+
+index = index+1
+}
+
+results = data.frame(results)
+names(results) = c("TimeStep", "C-Q Slope", "C-Q Intercept")
+return(results)
+
+}
