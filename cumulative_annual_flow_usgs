@@ -6,9 +6,13 @@
 gage = "01076500" # usgs gage id
 da. = 622 # drainage area in sq miles
 state = "nh" # where is the gage?
+begin.date = "1910-01-01" # for past years
+end.date = "2015-12-31" # for past years
+current.year.begin = "2016-01-01" # for current years
+current.year.end = "2016-10-10" # for current years
 #----------
 
-url=paste("http://waterdata.usgs.gov/", state, "/nwis/dv?cb_00060=on&format=rdb&site_no=",gage,"&referred_module=sw&period=&begin_date=1910-01-01&end_date=2015-12-31",sep="")
+url=paste("http://waterdata.usgs.gov/", state, "/nwis/dv?cb_00060=on&format=rdb&site_no=",gage,"&referred_module=sw&period=&begin_date=", begin.date,"&end_date=", end.date, sep="")
 data=read.table(url, sep="\t", header=T)
 data1=data[2:length(data[,1]),]
 q=as.numeric(as.character(data1[,4]))
@@ -47,7 +51,7 @@ for(i in 1:length(years)){
 	}
 }
 
-url=paste("http://waterdata.usgs.gov/", state, "/nwis/dv?cb_00060=on&format=rdb&site_no=",gage,"&referred_module=sw&period=&begin_date=2016-01-01&end_date=2016-10-10",sep="")
+url=paste("http://waterdata.usgs.gov/", state, "/nwis/dv?cb_00060=on&format=rdb&site_no=",gage,"&referred_module=sw&period=&begin_date=", current.year.begin, "&end_date=", current.year.end, sep="")
 data=read.table(url, sep="\t", header=T)
 data1=data[2:length(data[,1]),]
 q=as.numeric(as.character(data1[,4]))
