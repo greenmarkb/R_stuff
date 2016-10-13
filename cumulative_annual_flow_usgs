@@ -1,0 +1,80 @@
+#---this script makes the seasonal cumulative curve, and then compares the recent year to it
+
+#--get the data
+
+#-user inputs-
+gage = "01076500" # usgs gage id
+da. = 622 # drainage area in sq miles
+state = "nh" # where is the gage?
+#----------
+
+url=paste("http://waterdata.usgs.gov/", state, "/nwis/dv?cb_00060=on&format=rdb&site_no=",gage,"&referred_module=sw&period=&begin_date=1910-01-01&end_date=2015-12-31",sep="")
+data=read.table(url, sep="\t", header=T)
+data1=data[2:length(data[,1]),]
+q=as.numeric(as.character(data1[,4]))
+dt=strptime(data1[,3], format="%Y-%m-%d")
+
+da= da.*27878400
+sec=86400
+mm=304.8
+ro=q/da*sec*mm
+
+#----------
+
+#-make the curves-
+years = unique(dt$year)
+master = matrix(NA, 366, length(years))
+cumu = matrix(NA, 366, length(years))
+for(i in 1:length(years)){
+	aa = subset(ro, dt$year==years[i])
+	aa. = subset(dt$yday, dt$year==years[i])
+	if(length(aa)<365){master[,i] = master[,i]}
+	if(length(aa)>=365){um = match(aa., c(0:365))
+		master[um,i] = aa
+		cumu[um,i] = cumsum(aa)}
+}
+for(i in 1:length(years)){
+	if(is.na(cumu[1,i])==F){
+		if(i==1){
+			ff = subset(cumu[,i], is.na(cumu[,i])==F)
+			par(mar=c(5,5,3,1))
+			plot(c(1:length(ff)), ff, type="l", col="grey", ylim=c(0, 1300), cex.lab=2, cex.axis=1.35, ylab="Cumulative Unit Discharge (mm)", xlab="Day of the Year", main="Pemigewasset River at Plymouth, NH since 1910", cex.main=1.5)
+			}
+		if(i>1){
+			ff = subset(cumu[,i], is.na(cumu[,i])==F)
+			points(c(1:length(ff)), ff, type="l", col="grey")
+			}
+	}
+}
+
+url=paste("http://waterdata.usgs.gov/", state, "/nwis/dv?cb_00060=on&format=rdb&site_no=",gage,"&referred_module=sw&period=&begin_date=2016-01-01&end_date=2016-10-10",sep="")
+data=read.table(url, sep="\t", header=T)
+data1=data[2:length(data[,1]),]
+q=as.numeric(as.character(data1[,4]))
+dt=strptime(data1[,3], format="%Y-%m-%d")
+
+da= da.*27878400
+sec=86400
+mm=304.8
+ro=q/da*sec*mm
+
+yo = ro[is.na(ro)==F]
+dt. = dt$yday[is.na(ro)==F]
+flag = length(ro[is.na(ro)==T])
+vb = Sys.time()
+vb. = strptime(vb, format="%Y-%m-%d %H:%M:%S")
+if(flag>0){print("NAs in runoff data")}
+if(flag<=4){ # this should be set to the number of NAs you are willing to tolerate
+	dg = cumsum(yo)
+	points(dt., dg, type="l", lwd=2.5, col="blue")}
+
+driest = subset(years, cumu[365,]==min(cumu[365,], na.rm=T))
+driest. = subset(cumu[365,], cumu[365,]==min(cumu[365,], na.rm=T))
+wettest = subset(years, cumu[365,]==max(cumu[365,], na.rm=T))
+wettest. = subset(cumu[365,], cumu[365,]==max(cumu[365,], na.rm=T))
+
+text(360, driest., driest+1900, cex=1.5, col="dark grey", pos=1)
+text(360, wettest., wettest+1900, cex=1.5, col="dark grey", pos=3)
+text(vb.$yday, dg[length(dg)], vb.$year+1900, cex=1.5, col="blue", pos=3)
+
+legend("bottomright", paste("Data from USGS, Gage number", gage), cex=0.7, bty="n")
