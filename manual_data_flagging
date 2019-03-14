@@ -4,33 +4,90 @@
 # March 2019
 #-------
 
+# Use this function to flag data points on a scatter plot using a rectangular selector. The user provides the independent and dependent variables, is prompted for a code to associate with the flagged data, and is asked for final approval. 
+
 flagging.many = function(x,y){
-	plot(x,y,pch=16, cex=0.3)
-	a = locator()
-	flags = ifelse(x>=min(a$x) & x<=max(a$x) & y>=min(a$y) & y<=max(a$y), 1, 0)
-	y. = ifelse(flags==1, NA, y)
-	FL = readline(prompt="Enter a flag code: ")
-	FL = as.character(FL)
-	codes  = ifelse(flags==1, FL, "")
-	points(x,y.,pch=16, cex=0.3, col="orange")
-	GOOD = readline(prompt="Are you happy with the results? (y/n) ")
-	GOOD = as.character(GOOD)
-	if(GOOD!="y"){return(data.frame(x, y))}
+	
+	# make the plot
+	plot(x,y,pch=16, cex=0.3) 
+	
+	# use the locator() function to identify data within a rectangle
+	a = locator() 
+	
+	# make the 1/0 flags based on the rectangle
+	flags = ifelse(x>=min(a$x) & x<=max(a$x) & y>=min(a$y) & y<=max(a$y), 1, 0) 
+	
+	# make the flagged data NAs
+	y. = ifelse(flags==1, NA, y) 
+	
+	# ask for the code to associate with flagged data
+	FL = readline(prompt="Enter a flag code: ") 
+	
+	# make sure the code is character
+	FL = as.character(FL) 
+	
+	# build the list of codes
+	codes  = ifelse(flags==1, FL, "") 
+	
+	# show the data with the flagged data removed
+	points(x,y.,pch=16, cex=0.3, col="orange") 
+	
+	# ask whether the results are ok
+	GOOD = readline(prompt="Are you happy with the results? (y/n) ") 
+	
+	# make sure the response is character
+	GOOD = as.character(GOOD) 
+	
+	# if the data removal is not ok, return the original data
+	if(GOOD!="y"){return(data.frame(x, y))} 
+	
+	# if the data removal is ok, return the new data with flag codes
 	if(GOOD=="y"){return(data.frame(x, y., codes))}
+	
 }
 
+#---------------------------------------------
+#---------------------------------------------
+
+# Use this function to flag a data point on a scatter plot using a pointed selector. Multiple data points can be identified. The user provides the independent and dependent variables, is prompted for a code to associate with the flagged data, and is asked for final approval. 
+
 flagging.one = function(x,y){
+	
+	# make the plot
 	plot(x,y,pch=16, cex=0.3)
+	
+	# use the identify() function to identify a data point
 	a = identify(x,y)
+	
+	# make the 1/0 flags based on the point
 	flags = matrix(0, length(x), 1)
 	flags[a] = 1
+	
+	# make the flagged data NAs
 	y. = ifelse(flags==1, NA, y)
+	
+	# ask for the code to associate with flagged data
 	FL = readline(prompt="Enter a flag code: ")
+	
+	# make sure the code is character
 	FL = as.character(FL)
+	
+	# build the list of codes
 	codes  = ifelse(flags==1, FL, "")
+	
+	# show the data with the flagged data removed
 	points(x,y.,pch=16, cex=0.3, col="orange")
+	
+	# ask whether the results are ok
 	GOOD = readline(prompt="Are you happy with the results? (y/n) ")
+	
+	# make sure the response is character
 	GOOD = as.character(GOOD)
-	if(GOOD!="y"){return(data.frame(x, y))}
+	
+	# if the data removal is not ok, return the original data
+	if(GOOD!="y"){return(data.frame(x, y))} 
+	
+	# if the data removal is ok, return the new data with flag codes
 	if(GOOD=="y"){return(data.frame(x, y., codes))}
+	
 }
