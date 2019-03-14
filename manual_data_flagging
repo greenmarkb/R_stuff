@@ -1,0 +1,36 @@
+#-------
+# manually flag data
+# script by Mark B. Green
+# March 2019
+#-------
+
+flagging.many = function(x,y){
+	plot(x,y,pch=16, cex=0.3)
+	a = locator()
+	flags = ifelse(x>=min(a$x) & x<=max(a$x) & y>=min(a$y) & y<=max(a$y), 1, 0)
+	y. = ifelse(flags==1, NA, y)
+	FL = readline(prompt="Enter a flag code: ")
+	FL = as.character(FL)
+	codes  = ifelse(flags==1, FL, "")
+	points(x,y.,pch=16, cex=0.3, col="orange")
+	GOOD = readline(prompt="Are you happy with the results? (y/n) ")
+	GOOD = as.character(GOOD)
+	if(GOOD!="y"){return(data.frame(x, y))}
+	if(GOOD=="y"){return(data.frame(x, y., codes))}
+}
+
+flagging.one = function(x,y){
+	plot(x,y,pch=16, cex=0.3)
+	a = identify(x,y)
+	flags = matrix(0, length(x), 1)
+	flags[a] = 1
+	y. = ifelse(flags==1, NA, y)
+	FL = readline(prompt="Enter a flag code: ")
+	FL = as.character(FL)
+	codes  = ifelse(flags==1, FL, "")
+	points(x,y.,pch=16, cex=0.3, col="orange")
+	GOOD = readline(prompt="Are you happy with the results? (y/n) ")
+	GOOD = as.character(GOOD)
+	if(GOOD!="y"){return(data.frame(x, y))}
+	if(GOOD=="y"){return(data.frame(x, y., codes))}
+}
