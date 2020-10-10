@@ -1,0 +1,48 @@
+
+library(e1071)
+library(randomForest)
+
+#--Nash Sutcliffe--
+NashSutcliffe = function(predicted, measured){
+  NS = 1-sum((predicted-measured)^2, na.rm=T)/sum((measured-mean(measured, na.rm=T))^2, na.rm=T)
+  return(data.frame(NS))
+}
+
+# number of models to test
+n = 10
+
+# a data frame of sensor data matched to a measured solute (ind)
+x1 = data.frame(ind, FDOM, turb, pH, SC, DO, doy)
+
+# a data frame of all sensor data
+y = data.frame(FDOM2, turb2, pH2, SC2, DO2, doy2)
+names(y) = names(x1)[2:7]
+
+# make the containers to store intermediate results
+preds = matrix(NA, nrow(y), n)
+preds99 = matrix(NA, nrow(x1), n)
+
+# loop through the n models
+for(i in 1:n){
+	# train a model with a random subset
+	a = sample(1:nrow(x1), as.integer(nrow(x1)/1.5))
+	x = x1[a,]
+	model = svm(ind~FDOM+turb+pH+SC+DO+doy, data=x) # can also be a randomForest model
+	
+	# make the prediction of the rest of the data
+	# this prediction is for assessing the model goodness-of-fit
+	a2 = setdiff(1:nrow(x1), a) 
+	x = x1[a2,2:7]
+	preds99[a2,i] = predict(model, newdata=x)
+	
+	# predict the solute concentration for each sensor measurment
+	x = y
+	pred[,i] = predict(model, newdata=x)
+}
+
+X.p = apply(preds99, 1, mean, na.rm=T) # predicted
+X.a = x1[,1] # measured
+NashSutcliffe(X.p, X.a)
+
+# predicted high-frequency solute concentration
+conc = apply(preds, 1, mean, na.rm=T)
