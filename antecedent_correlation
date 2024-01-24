@@ -1,0 +1,31 @@
+# this function evaluates the correlation between two time series,
+# accounting for the antecedent condition of the independent variable.
+#
+# written by Mark B. Green and used in a couple of his research papers
+#
+antecedent.cor=function(x, y, dtx, dty, steps){ # x and y are independent and dependent variables, dty and dtx are the dates associated with each, and the steps is a list of antecedent windows (in seconds) to assess 
+  cors = matrix(NA, length(steps), 1)
+  for(i in 1:length(steps)){
+    for(j in 1:length(dty)){
+      a = subset(x, dtx<dty[j] & dtx>=(dty[j]-steps[i]))
+      if(j==1){
+        x. = mean(a, na.rm=T)} # the antacedent mean is used here, but this could be changed to other functions (e.g., max, min, etc.)
+      if(j>1){x. = c(x., mean(a, na.rm=T))}
+    }
+    cors[i] = cor(x., y, method="spearman", use="complete.obs")
+  }
+  out = data.frame(steps, cors)
+  return(out)
+}
+
+# this function generates a time series of the antecedent transformation of the independent variable
+antecedent=function(x, dtx, dty, kh){ # kh is the antecedent period in seconds
+  for(j in 1:length(dty)){
+    a = subset(x, dtx<dty[j] & dtx>=(dty[j]-kh))
+    if(j==1){
+      x. = mean(a, na.rm=T)}
+    if(j>1){x. = c(x., mean(a, na.rm=T))}
+  }
+  out = data.frame(x.)
+  return(out)
+}
